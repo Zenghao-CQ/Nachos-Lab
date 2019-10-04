@@ -15,9 +15,9 @@ CC=gcc
 # Sparc/Solaris
 # CFLAGS= -I./ -I../threads -DHOST_IS_BIG_ENDIAN
 # Linux
-CFLAGS=-I./ -I../threads -g
+CFLAGS=-I./ -I../threads -g -m32
 
-LD=gcc
+LD=gcc -m32
 
 all: coff2noff
 

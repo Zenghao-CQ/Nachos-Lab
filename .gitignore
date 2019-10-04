@@ -1,2 +1,11 @@
-*.o
-
+*
+!*.cpp
+!*.c
+!*.cc
+!*.h
+!Makefile
+!Makefile.common
+!Makefile.dep
+test/halt
+test/matmult
+test/sort
