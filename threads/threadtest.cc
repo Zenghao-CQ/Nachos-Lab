@@ -14,7 +14,7 @@
 #include "elevatortest.h"
 
 // testnum is set in main.cc
-int testnum = 4;
+int testnum = 5;
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -82,7 +82,7 @@ ThreadTest3()
 }
 
 void
-fork_func(int mm)
+fork_func4(int mm)
 {
     printf("*** %d,thread name = %s , TID = %d, priority = %d\n",mm, currentThread->getName(),currentThread->get_thread_id(),currentThread->get_pri());
     scheduler->Print();
@@ -99,12 +99,33 @@ ThreadTest4()
     printf("***before Yield***");
     scheduler->Print();
     printf("\n\n***start YIELD***\n\n");
-    thigh->Fork(fork_func,(void*)0);
-    tlow->Fork(fork_func,(void*)0);
-    fork_func(0);
+    thigh->Fork(fork_func4,(void*)0);
+    tlow->Fork(fork_func4,(void*)0);
+    fork_func4(0);
 }
 
-
+void
+fork_func5(int mm)
+{
+    //printf("*** %d,thread name = %s , TID = %d, rm_time = %d\n",mm, currentThread->getName(),currentThread->get_thread_id(),currentThread->get_rmtime());
+    for(int i = 0;i < 100;++i)
+    {
+        interrupt->OneTick();//move 10ticks
+        printf("%d",currentThread->get_thread_id());
+    }
+    printf("\n");
+    currentThread->Finish();
+}
+void
+ThreadTest5()
+{
+    DEBUG('t', "Entering Lab1 Test4:");
+    Thread * t1 = new Thread("no2");
+    Thread * t2 = new Thread("no3");
+    t1->Fork(fork_func5,(void*)0);
+    t2->Fork(fork_func5,(void*)0);
+    fork_func5(0);
+}
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -126,6 +147,9 @@ ThreadTest()
 	break;
     case 4:
 	ThreadTest4();
+	break;
+    case 5:
+	ThreadTest5();
 	break;
 
     default:

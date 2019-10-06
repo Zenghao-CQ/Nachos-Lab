@@ -63,8 +63,26 @@ extern void Cleanup();
 static void
 TimerInterruptHandler(int dummy)
 {
+
     if (interrupt->getStatus() != IdleMode)
-	interrupt->YieldOnReturn();
+	    interrupt->YieldOnReturn();
+}
+//modify lab2
+static void
+TimerInterruptHandler_lab2(int dummy)
+{
+
+    if (interrupt->getStatus() != IdleMode)
+	    interrupt->YieldOnReturn();
+    
+    if(currentThread == NULL)
+        printf("\ntimer_handle_error\n\n");
+    ASSERT( currentThread!=NULL );
+    int rmtime = currentThread->get_rmtime();
+    if (rmtime != 0)
+        currentThread->set_rmtime(rmtime-1);
+    else
+        interrupt->YieldOnReturn();
 }
 
 //----------------------------------------------------------------------
@@ -143,8 +161,11 @@ Initialize(int argc, char **argv)
     stats = new Statistics();			// collect statistics
     interrupt = new Interrupt;			// start up interrupt handling
     scheduler = new Scheduler();		// initialize the ready queue
-    if (randomYield)				// start the timer (if needed)
-	timer = new Timer(TimerInterruptHandler, 0, randomYield);
+	//orignl
+    //if (randomYield)				// start the timer (if needed)
+    //timer = new Timer(TimerInterruptHandler, 0, randomYield);
+    //modify lab2
+        timer = new Timer(TimerInterruptHandler_lab2, 0, FALSE);//no random
 
     threadToBeDestroyed = NULL;
 

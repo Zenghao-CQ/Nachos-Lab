@@ -81,7 +81,9 @@ class Thread {
     void *machineState[MachineStateSize];  // all registers except for stackTop
 
   public:
-    Thread(char* debugName,int pri=0);		// initialize a Thread 
+    //Thread(char* debugName);
+    //Thread(char* debugName,int pri=0);		// initialize a Thread 
+    Thread(char* debugName,int pri=0,int rmtime = 4); //modify lab2
     ~Thread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted
 					// must not be running when delete 
@@ -110,6 +112,9 @@ class Thread {
     //modify lab2
     void set_pri(int pri) { priority = pri; }
     int get_pri() { return priority; }
+      //for exec
+    void set_rmtime(int time) { remain_time=time; }
+    int get_rmtime() { return remain_time; }
 
   private:
     // some of the private data for this class is listed above
@@ -119,6 +124,8 @@ class Thread {
     int thread_id;
     //modify lab2
     int priority;
+      //for exec
+    int remain_time;//*TimerTicks
 
     int* stack; 	 		// Bottom of the stack 
 					// NULL if this is the main thread
