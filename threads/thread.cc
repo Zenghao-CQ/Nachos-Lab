@@ -24,6 +24,26 @@
 					// execution stack, for detecting 
 					// stack overflows
 
+
+int 
+Thread::thread_ID_distribution()//threadID 分配;遍历 ID 数组,找到第一个未分配的 ID,并分配;若超过 128 个则不再分配并报错
+{
+    int i;
+    for (i = 0; i < 128; i++)
+    {
+        if (!threads_ids[i])
+        break;
+    }
+    if (i < 128)
+    {
+        threads_ids[i] = true;
+        return i + 1;
+    }
+    else
+        return -1;
+}
+
+
 //----------------------------------------------------------------------
 // Thread::Thread
 // 	Initialize a thread control block, so that we can then call
@@ -38,6 +58,12 @@ Thread::Thread(char* threadName)
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    //modify lab1
+    //user_id = getuid();
+    thread_id = thread_ID_distribution();
+    if(thread_id != -1)
+        threads_ptr[thread_id] = this;
+    ASSERT(thread_id != -1);
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -60,6 +86,9 @@ Thread::~Thread()
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
     ASSERT(this != currentThread);
+    //modify lab1 ?which line? i dont know
+    threads_ids[thread_id] = false;
+    threads_ptr[thread_id] = NULL;
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
 }

@@ -14,7 +14,7 @@
 #include "elevatortest.h"
 
 // testnum is set in main.cc
-int testnum = 1;
+int testnum = 2;
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -48,9 +48,39 @@ ThreadTest1()
     DEBUG('t', "Entering ThreadTest1");
 
     Thread *t = new Thread("forked thread");
-
+    t->set_user_id(6324);
     t->Fork(SimpleThread, (void*)1);
     SimpleThread(0);
+}
+//modify lab1
+void
+ThreadTest2()
+{
+    DEBUG('t', "Entering Lab1 Test3:");
+
+    int all_threads = 150;
+
+    int i;
+    for (i = 0; i < all_threads; ++i) {
+        // Generate a Thread object
+        Thread *t = new Thread("lab1 thread");
+        printf("*** thread name = %s : user_id = %d, thread_id = %d\n", t->getName(),t->get_user_id(), t->get_thread_id());
+    }
+}
+
+void
+ThreadTest3()
+{
+    DEBUG('t', "Entering Lab1 Test3:");
+    Thread *t1 = new Thread("thread 1");
+    Thread *t2 = new Thread("thread 2");
+    t2->setStatus(RUNNING);
+    Thread *t3 = new Thread("thread 3");
+    Thread *t4 = new Thread("thread 4");
+    t4->setStatus(BLOCKED);
+
+
+    TS();
 }
 
 //----------------------------------------------------------------------
@@ -65,6 +95,14 @@ ThreadTest()
     case 1:
 	ThreadTest1();
 	break;
+    //modify lab1
+    case 2:
+	ThreadTest2();
+	break;
+    case 3:
+	ThreadTest3();
+	break;
+
     default:
 	printf("No test specified.\n");
 	break;

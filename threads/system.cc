@@ -19,6 +19,10 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 
+//modify lab1
+bool threads_ids[max_thread_num];
+Thread* threads_ptr[max_thread_num];
+
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -38,7 +42,6 @@ PostOffice *postOffice;
 
 // External definition, to allow us to take a pointer to this function
 extern void Cleanup();
-
 
 //----------------------------------------------------------------------
 // TimerInterruptHandler
@@ -80,6 +83,13 @@ Initialize(int argc, char **argv)
     int argCount;
     char* debugArgs = "";
     bool randomYield = FALSE;
+    //modify lab1
+    int i=0;
+    for(i=0; i<max_thread_num; ++i)
+    {
+        threads_ids[i] = false;
+        threads_ptr[i] = NULL;
+    }
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
@@ -195,3 +205,17 @@ Cleanup()
     Exit(0);
 }
 
+//modify lab1
+void
+TS()
+{
+    DEBUG('t', "Entering command TS");
+    const char* status_name[] = {"JUST_CREATED", "RUNNING", "READY", "BLOCKED"};
+    printf("UID\tTID\tNAME\tSTATUS\n");
+    int i;
+    for (i = 0; i < max_thread_num; i++) { // check pid flag
+        if (threads_ptr[i]) {
+            printf("%d\t%d\t%s\t%s\n", threads_ptr[i]->get_user_id(), threads_ptr[i]->get_thread_id(), threads_ptr[i]->getName(), status_name[threads_ptr[i]->get_status()]);
+        }
+    }
+}

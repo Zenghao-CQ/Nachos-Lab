@@ -29,6 +29,12 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 
+//modify lab1
+#define max_thread_num 128
+extern bool threads_ids[max_thread_num];//define in .cc file
+extern Thread* threads_ptr[max_thread_num]; 
+extern void TS();
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

@@ -46,6 +46,8 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+#define THREADS //modify lab1
+
 #define MAIN
 #include "copyright.h"
 #undef MAIN

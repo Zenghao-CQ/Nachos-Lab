@@ -9,3 +9,4 @@
 test/halt
 test/matmult
 test/sort
+test/shell
