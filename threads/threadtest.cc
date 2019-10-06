@@ -14,7 +14,7 @@
 #include "elevatortest.h"
 
 // testnum is set in main.cc
-int testnum = 2;
+int testnum = 4;
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -56,7 +56,7 @@ ThreadTest1()
 void
 ThreadTest2()
 {
-    DEBUG('t', "Entering Lab1 Test3:");
+    DEBUG('t', "Entering Lab1 Test2:");
 
     int all_threads = 150;
 
@@ -78,10 +78,32 @@ ThreadTest3()
     Thread *t3 = new Thread("thread 3");
     Thread *t4 = new Thread("thread 4");
     t4->setStatus(BLOCKED);
-
-
     TS();
 }
+
+void
+fork_func(int mm)
+{
+    printf("*** %d,thread name = %s , TID = %d, priority = %d\n",mm, currentThread->getName(),currentThread->get_thread_id(),currentThread->get_pri());
+    scheduler->Print();
+    printf("\n\n");
+    currentThread->Yield();
+}
+
+void
+ThreadTest4()
+{
+    DEBUG('t', "Entering Lab1 Test4:");
+    Thread * thigh = new Thread("high thread",80);
+    Thread * tlow = new Thread("low thread",20);
+    printf("***before Yield***");
+    scheduler->Print();
+    printf("\n\n***start YIELD***\n\n");
+    thigh->Fork(fork_func,(void*)0);
+    tlow->Fork(fork_func,(void*)0);
+    fork_func(0);
+}
+
 
 //----------------------------------------------------------------------
 // ThreadTest
@@ -101,6 +123,9 @@ ThreadTest()
 	break;
     case 3:
 	ThreadTest3();
+	break;
+    case 4:
+	ThreadTest4();
 	break;
 
     default:

@@ -52,8 +52,10 @@ Thread::thread_ID_distribution()//threadID 分配;遍历 ID 数组,找到第一�
 //	"threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(char* threadName)
+//modify lab2 add arg pri
+Thread::Thread(char* threadName,int pri = 0)
 {
+    priority = pri;
     name = threadName;
     stackTop = NULL;
     stack = NULL;
