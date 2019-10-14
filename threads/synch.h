@@ -80,6 +80,10 @@ class Lock {
   private:
     char* name;				// for debugging
     // plus some other stuff you'll need to define
+    
+    //modify lab3
+    Thread * owner_thread;
+    Semaphore * lock_sema;
 };
 
 // The following class defines a "condition variable".  A condition
@@ -132,5 +136,26 @@ class Condition {
   private:
     char* name;
     // plus some other stuff you'll need to define
+    //modify lab3
+    List* queue;
 };
+
+
+//modify lab3 add class Barrier
+//all threads wait at Barrier->MergePoint
+class Barrier{
+  public:
+    Barrier(char* debugName, int initialValue); 
+    ~Barrier(); 
+    char* getName() { return name; } 
+    void MergePoint(); // wait until all threads reach
+
+  private:
+    char* name;            
+    int arrive_num;       // num of thread still not reach
+    int tol_num;        // Total Threads number
+    Lock* inner_clok;           
+    Condition* inner_cond;   
+};
+
 #endif // SYNCH_H

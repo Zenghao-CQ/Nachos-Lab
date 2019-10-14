@@ -213,14 +213,14 @@ Thread::Yield ()
     
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
     
-    //modify lab2
-    if(currentThread->get_rmtime() == 0)//have no remain time
-    {
-        printf("\nyiled from Timer thread_id = %d time over\n\n",currentThread->get_thread_id());
-        currentThread->set_rmtime(4);
-    }
-    else
-        printf("\nyiled from other thread_id = %d time over\n\n",currentThread->get_thread_id());
+    // //modify lab2
+    // if(currentThread->get_rmtime() == 0)//have no remain time
+    // {
+    //     printf("\nyiled from Timer thread_id = %d time over\n\n",currentThread->get_thread_id());
+    //     currentThread->set_rmtime(4);
+    // }
+    // else
+    //     printf("\nyiled from other thread_id = %d yiled\n\n",currentThread->get_thread_id());
         
     //
     nextThread = scheduler->FindNextToRun();

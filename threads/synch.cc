@@ -100,13 +100,120 @@ Semaphore::V()
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-Lock::Lock(char* debugName) {}
-Lock::~Lock() {}
-void Lock::Acquire() {}
-void Lock::Release() {}
 
-Condition::Condition(char* debugName) { }
-Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+//modify lab3
+Lock::Lock(char* debugName)
+{
+    name = debugName;
+    owner_thread = NULL;
+    lock_sema = new Semaphore("Lock_inside_sema",1);//must be 1
+}
+Lock::~Lock()
+{
+    delete lock_sema;
+}
+void Lock::Acquire()
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);	
+    DEBUG('s', "thread %d acquires lock %s \n", currentThread->get_thread_id(),name);
+    lock_sema->P(); // value 1 to 0
+    owner_thread = currentThread;
+    (void) interrupt->SetLevel(oldLevel);	
+}
+void Lock::Release()
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);	
+    DEBUG('s', "thread %d release lock %s \n", currentThread->get_thread_id(),name);
+    ASSERT(this->isHeldByCurrentThread());
+    lock_sema->V(); // value 0 to 1
+    owner_thread = NULL;
+    (void) interrupt->SetLevel(oldLevel);	
+}
+bool Lock::isHeldByCurrentThread()	// true if the current thread
+{
+    return currentThread == owner_thread;
+}
+
+Condition::Condition(char* debugName)
+{
+    name = debugName;
+    queue = new List();
+}
+Condition::~Condition()
+{
+    delete queue;
+}
+void Condition::Wait(Lock* conditionLock) 
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    ASSERT(conditionLock->isHeldByCurrentThread());
+    conditionLock->Release();
+    queue->Append(currentThread);
+    currentThread->Sleep();
+
+    conditionLock->Acquire();
+    (void) interrupt->SetLevel(oldLevel);
+}
+void Condition::Signal(Lock* conditionLock)
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);	
+    
+    ASSERT(conditionLock->isHeldByCurrentThread())
+
+    Thread* thread = (Thread*) queue->Remove();
+    if(thread)
+        scheduler->ReadyToRun(thread);
+    
+    (void) interrupt->SetLevel(oldLevel);
+}
+void Condition::Broadcast(Lock* conditionLock) 
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);	
+    
+    ASSERT(conditionLock->isHeldByCurrentThread())
+
+    Thread* thread = (Thread*) queue->Remove();
+    while(thread)
+    {
+        scheduler->ReadyToRun(thread);
+        thread = (Thread*) queue->Remove();
+    }
+    (void) interrupt->SetLevel(oldLevel);
+}
+
+//----------------------------------------------
+//modify lab3 add class Barrier
+//all threads wait at Barrier->MergePoint
+//----------------------------------------------
+Barrier::Barrier(char* debugName, int initialValue)
+{
+    name = debugName;
+    arrive_num = 0;
+    tol_num = initialValue;
+    inner_clok = new Lock("inner lock");
+    inner_cond = new Condition("inner condition");
+}
+Barrier::~Barrier()
+{
+    delete inner_cond;
+    delete inner_clok;
+}
+void Barrier::MergePoint()
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    inner_clok->Acquire();
+    ASSERT(arrive_num <= tol_num);//make sure no logical error
+    ASSERT(arrive_num >= 0);
+    ++arrive_num;
+    if(arrive_num<tol_num)
+        inner_cond->Wait(inner_clok);
+    else
+    {
+        inner_cond->Broadcast(inner_clok);
+        arrive_num = 0;
+    }
+    inner_clok->Release();
+
+    (void) interrupt->SetLevel(oldLevel);
+}
