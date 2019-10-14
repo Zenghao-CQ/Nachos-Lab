@@ -56,9 +56,9 @@ Scheduler::ReadyToRun (Thread *thread)
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
-    readyList->Append((void *) thread);//original and lab2
+    //readyList->Append((void *) thread);//original and lab2
     //lab2 exe1
-    //readyList->SortedInsert((void *)thread,thread->get_pri());
+    readyList->SortedInsert((void *)thread,thread->get_pri());
 }
 
 //----------------------------------------------------------------------
