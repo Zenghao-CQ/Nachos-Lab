@@ -72,8 +72,8 @@ static void
 TimerInterruptHandler_lab2(int dummy)
 {
 
-    if (interrupt->getStatus() != IdleMode)
-	    interrupt->YieldOnReturn();
+    // if (interrupt->getStatus() != IdleMode)
+	//     interrupt->YieldOnReturn();
     
     if(currentThread == NULL)
         printf("\ntimer_handle_error\n\n");
