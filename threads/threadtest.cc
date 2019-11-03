@@ -331,6 +331,22 @@ void test_barrier()
     t4->Fork(func_barrier,(void*)0);
     currentThread->Yield();
 }
+
+void foo(int num)
+{
+    for(int i=0;i<100;++i)
+    {
+        printf("Im %s\n" , currentThread->getName());
+        interrupt->OneTick();
+    }
+}
+void quiz_1()
+{
+    Thread *t = new Thread("kitty");
+    t->Fork(foo,(void*)1);
+    Thread *t2 = new Thread("world");
+    t2->Fork(foo,(void*)1);
+}
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.

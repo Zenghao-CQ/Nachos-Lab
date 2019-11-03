@@ -163,8 +163,9 @@ Initialize(int argc, char **argv)
     scheduler = new Scheduler();		// initialize the ready queue
 	//orignl
     if (randomYield)				// start the timer (if needed)
-    timer = new Timer(TimerInterruptHandler, 0, randomYield);
+        timer = new Timer(TimerInterruptHandler, 0, randomYield);
     //modify lab2
+    else
         timer = new Timer(TimerInterruptHandler_lab2, 0, FALSE);//no random
 
     threadToBeDestroyed = NULL;
