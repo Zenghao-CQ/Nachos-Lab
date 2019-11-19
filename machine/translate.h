@@ -40,6 +40,11 @@ class TranslationEntry {
 			// page is referenced or modified.
     bool dirty;         // This bit is set by the hardware every time the
 			// page is modified.
+    //modify lab4
+    int last_ticks;
+    #ifdef INVERSE_TABLE
+    int tid;//thread id
+    #endif
 };
 
 #endif

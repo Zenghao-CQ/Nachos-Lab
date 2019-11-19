@@ -46,7 +46,8 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-#define THREADS //modify lab1
+//#define THREADS //modify lab1
+//#define USER_PROGRAM
 
 #define MAIN
 #include "copyright.h"
@@ -65,6 +66,7 @@ extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
 extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
+extern void StartTwoProcess(char *file);
 
 //----------------------------------------------------------------------
 // main
@@ -113,7 +115,8 @@ main(int argc, char **argv)
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-x")) {        	// run a user program
 	    ASSERT(argc > 1);
-            StartProcess(*(argv + 1));
+            //StartTwoProcess(*(argv + 1));
+			StartTwoProcess(*(argv + 1));
             argCount = 2;
         } else if (!strcmp(*argv, "-c")) {      // test the console
 	    if (argc == 1)

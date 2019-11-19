@@ -55,7 +55,7 @@ void CheckEndian()
 Machine::Machine(bool debug)
 {
     int i;
-
+    bitmap = 0;//modify lab4
     for (i = 0; i < NumTotalRegs; i++)
         registers[i] = 0;
     mainMemory = new char[MemorySize];
@@ -70,7 +70,20 @@ Machine::Machine(bool debug)
     tlb = NULL;
     pageTable = NULL;
 #endif
-
+#ifdef INVERSE_TABLE
+    pageTable = new TranslationEntry[NumPhysPages];
+    pageTableSize = NumPhysPages;
+    for(int i = 0; i < NumPhysPages; ++i)
+    {
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = i;
+        pageTable[i].valid = FALSE;
+        pageTable[i].use = FALSE;
+        pageTable[i].readOnly = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].tid = -1;
+    }
+#endif //INVERSE_TABLE
     singleStep = debug;
     CheckEndian();
 }
@@ -212,3 +225,62 @@ void Machine::WriteRegister(int num, int value)
 	registers[num] = value;
     }
 
+//----------------------------------------------------------------------
+// Machine::allocatePhyPage/freePhyPage
+//   	modify lab4 exe4 bitmap.
+//----------------------------------------------------------------------
+int Machine::allocatePhyPage()
+{
+#ifndef INVERSE_TABLE
+    for(int i = 0; i < NumPhysPages; ++i)
+    {
+        if(((bitmap >> i) & 1) == 0)
+        {
+            bitmap |= 1<<i;
+            DEBUG('m', "Allocate page %d\n", i);
+            printf("Allocte PhyPage %d\n",i);
+            //printf("The bitmap now is: %X\n",bitmap);
+            return i;
+        }
+    }
+#else //INVERSE_TABLE
+    for(int i = 0; i < NumPhysPages; ++i)
+    {
+        if(pageTable[i].valid == FALSE)
+        {
+            DEBUG('m', "Allocate page %d\n", i);
+            printf("Inverse Allocte PhyPage %d\n",i);
+            return i;
+        }
+    }
+#endif //INVERSE_TABLE
+    DEBUG('m', "Allocate page => pagetable full\n");
+    printf("Allocate page falut=> pagetable full\n");
+}
+void Machine::freePhyPage()
+{
+#ifndef INVERSE_TABLE
+    for(int i = 0; i < pageTableSize; ++i)
+    {
+        int ppn = pageTable[i].physicalPage;
+        if(((bitmap >> ppn)&1) == 1)
+        {
+            bitmap &= ~(1<<ppn);
+            DEBUG('m', "deAllocate page %d\n", ppn);
+            printf("deAllocte PhyPage %d\n",ppn);
+        }
+    }
+#else //INVERSE_TABLE
+    int current_tid = currentThread->get_thread_id();
+    for(int i =0;i < pageTableSize; ++i)
+    {
+        if(current_tid == pageTable[i].tid)
+        {
+            pageTable[i].valid = FALSE;
+            int ppn = pageTable[i].physicalPage;
+            DEBUG('m', "deAllocate page %d\n", ppn);
+            printf("Inverse deAllocte PhyPage %d\n",ppn);
+        }
+    }
+#endif //INVERSE_TABLE
+}

@@ -146,6 +146,9 @@ class Machine {
     void Debugger();		// invoke the user program debugger
     void DumpState();		// print the user CPU and memory state 
 
+    //modify lab4 exe4 bitmap
+    int allocatePhyPage();
+	void freePhyPage();
 
 // Data structures -- all of these are accessible to Nachos kernel code.
 // "public" for convenience.
@@ -187,6 +190,8 @@ class Machine {
 				// simulated instruction
     int runUntilTime;		// drop back into the debugger when simulated
 				// time reaches this value
+    //modify lab4 exe4 bitmap
+    unsigned int bitmap;
 };
 
 extern void ExceptionHandler(ExceptionType which);

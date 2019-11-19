@@ -62,6 +62,9 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
+    //modify lab4 exe6
+    filename = NULL;
+
     NoffHeader noffH;
     unsigned int i, size;
 
@@ -70,7 +73,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
-
+    //noffh = noffH;
 // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
 			+ UserStackSize;	// we need to increase the size
@@ -78,30 +81,60 @@ AddrSpace::AddrSpace(OpenFile *executable)
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
 
+    printf("addrspace=> size = %d,numpage = %d\n",size,numPages);
+    printf("    size = %d, addr = %d\n",noffH.code.size,noffH.code.virtualAddr);
+    printf("    size = %d, addr = %d\n",noffH.initData.size,noffH.initData.virtualAddr);
+    printf("    size = %d, addr = %d\n\n",noffH.uninitData.size,noffH.uninitData.virtualAddr);
+            
+#ifndef LAZY_LOADING
     ASSERT(numPages <= NumPhysPages);		// check we're not trying
 						// to run anything too big --
 						// at least until we have
 						// virtual memory
-
+#endif //lazy loading
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
 // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
+
+#ifndef LAZY_LOADING || INVERSE_TABLE
     for (i = 0; i < numPages; i++) {
 	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
-	pageTable[i].valid = TRUE;
-	pageTable[i].use = FALSE;
+	//pageTable[i].physicalPage = i; // modify lab4
+	pageTable[i].physicalPage = machine->allocatePhyPage();
+    pageTable[i].valid = TRUE;
+    pageTable[i].use = FALSE;
 	pageTable[i].dirty = FALSE;
 	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
 					// a separate page, we could set its 
 					// pages to be read-only
     }
-    
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
-    bzero(machine->mainMemory, size);
-
+    //bzero(machine->mainMemory, size);//fuck this line!!!!maybe !the uninit data should be zero
+    
+#ifdef USE_TLB //for multi thread, should be modified 
+   if (noffH.code.size > 0) {
+        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
+			noffH.code.virtualAddr, noffH.code.size);
+        for(int i = 0; i < noffH.code.size; ++i)
+        {
+            int vpn = (noffH.code.virtualAddr + i) / PageSize;
+            int offset = (noffH.code.virtualAddr + i) % PageSize;
+            int phyaddr = pageTable[vpn].physicalPage * PageSize + offset;
+            executable->ReadAt(&(machine->mainMemory[phyaddr]),1,noffH.code.inFileAddr + i);
+        }
+    }
+    if (noffH.initData.size > 0) {
+        for(int i = 0; i < noffH.initData.size; ++i)
+        {
+            int vpn = (noffH.initData.virtualAddr + i) / PageSize;
+            int offset = (noffH.initData.virtualAddr + i) % PageSize;
+            int phyaddr = pageTable[vpn].physicalPage * PageSize + offset;
+            executable->ReadAt(&(machine->mainMemory[phyaddr]),1,noffH.initData.inFileAddr + i);
+        }
+    }
+#else
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
@@ -115,7 +148,34 @@ AddrSpace::AddrSpace(OpenFile *executable)
         executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
 			noffH.initData.size, noffH.initData.inFileAddr);
     }
-
+#endif//USE_TLB
+#else//LAZY_LOADING 
+    char *switch_file_name ="woshale";
+    fileSystem->Create(switch_file_name,size);
+    OpenFile * switch_file = fileSystem->Open(switch_file_name);
+    ASSERT(switch_file != NULL);
+    if (noffH.code.size > 0) {
+        DEBUG('a', "In lazy loading copy code segment, at 0x%x, size %d\n", 
+			noffH.code.virtualAddr, noffH.code.size);
+        for(int i = 0; i < noffH.code.size; ++i)
+        {
+            char temp;
+            executable->ReadAt(&temp,1,noffH.code.inFileAddr + i);
+            switch_file->WriteAt(&temp,1,noffH.code.virtualAddr + i);
+        }
+    }
+    if (noffH.initData.size > 0) {
+        DEBUG('a', "In lazy loading copy initData segment, at 0x%x, size %d\n", 
+			noffH.initData.virtualAddr, noffH.initData.size);
+        for(int i = 0; i < noffH.initData.size; ++i)
+        {
+            char temp;
+            executable->ReadAt(&temp,1,noffH.initData.inFileAddr + i);
+            switch_file->WriteAt(&temp,1,noffH.initData.virtualAddr + i);
+        }
+    }
+    delete switch_file;
+#endif//LAZY_LOADING
 }
 
 //----------------------------------------------------------------------
@@ -169,7 +229,13 @@ AddrSpace::InitRegisters()
 //----------------------------------------------------------------------
 
 void AddrSpace::SaveState() 
-{}
+{
+    #ifdef USE_TLB // modify lab4, erase tlb
+    for (int i = 0; i < TLBSize; i++) 
+        machine->tlb[i].valid = FALSE;
+    //printf("savestate thread %s\n",currentThread->getName());
+    #endif
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState
@@ -181,6 +247,8 @@ void AddrSpace::SaveState()
 
 void AddrSpace::RestoreState() 
 {
+#ifndef INVERSE_TABLE
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+#endif
 }

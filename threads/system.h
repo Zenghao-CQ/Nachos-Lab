@@ -8,6 +8,13 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+// #define USER_PROGRAM
+// #define FILESYS_NEEDED
+// #define USE_TLB
+// #define LRU
+// #define INVERSE_TABLE
+// #define LAZY_LOADING
+
 #include "copyright.h"
 #include "utility.h"
 #include "thread.h"

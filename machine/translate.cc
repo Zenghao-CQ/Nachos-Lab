@@ -199,8 +199,9 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	return AddressErrorException;
     }
     
-    // we must have either a TLB or a page table, but not both!
-    ASSERT(tlb == NULL || pageTable == NULL);	
+	// we must have either a TLB or a page table, but not both!
+    //modify lab4
+    //ASSERT(tlb == NULL || pageTable == NULL);	
     ASSERT(tlb != NULL || pageTable != NULL);	
 
 // calculate the virtual page number, and offset within the page,
@@ -213,12 +214,29 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	    DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
 			virtAddr, pageTableSize);
 	    return AddressErrorException;
-	} else if (!pageTable[vpn].valid) {
+	} 
+#ifndef INVERSE_TABLE
+	else if (!pageTable[vpn].valid) {
 	    DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
 			virtAddr, pageTableSize);
 	    return PageFaultException;
 	}
 	entry = &pageTable[vpn];
+#else
+	int i;
+	for(i = 0;i < NumPhysPages; ++i)
+	{
+		if(pageTable[i].valid && 
+			pageTable[i].virtualPage == vpn && 
+			pageTable[i].tid == currentThread->get_thread_id())
+		{
+			entry = &pageTable[i];
+			break;
+		}
+	}
+	if(i == NumPhysPages)
+		return PageFaultException;
+#endif // INVERSE_TABLE
     } else {
         for (entry = NULL, i = 0; i < TLBSize; i++)
     	    if (tlb[i].valid && (tlb[i].virtualPage == vpn)) {
@@ -251,5 +269,11 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
     *physAddr = pageFrame * PageSize + offset;
     ASSERT((*physAddr >= 0) && ((*physAddr + size) <= MemorySize));
     DEBUG('a', "phys addr = 0x%x\n", *physAddr);
+	
+	//midify lab4
+	#ifdef LRU
+	entry->last_ticks = stats->userTicks;
+	#endif
+
     return NoException;
 }

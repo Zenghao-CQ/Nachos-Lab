@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "noff.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -48,6 +49,44 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+unsigned int next_tlb = -1;
+
+#ifdef LRU
+int LRU_next()
+{
+    int tempvpn;
+    int minticks = __INT_MAX__;
+    for(int i = 0; i < TLBSize; ++i)
+    {
+        if(machine->tlb[i].valid == false)
+        {
+            tempvpn = i;
+            return tempvpn;
+        }
+        if(machine->tlb[i].last_ticks < minticks)
+        {
+            tempvpn = i;
+            minticks = machine->tlb[i].last_ticks;
+        }
+    }
+    return tempvpn;
+}
+#endif
+
+void SwapHeader (NoffHeader *noffH)
+{
+	noffH->noffMagic = WordToHost(noffH->noffMagic);
+	noffH->code.size = WordToHost(noffH->code.size);
+	noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
+	noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
+	noffH->initData.size = WordToHost(noffH->initData.size);
+	noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
+	noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
+	noffH->uninitData.size = WordToHost(noffH->uninitData.size);
+	noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
+	noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
+}
+
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -56,7 +95,100 @@ ExceptionHandler(ExceptionType which)
     if ((which == SyscallException) && (type == SC_Halt)) {
 	DEBUG('a', "Shutdown, initiated by user program.\n");
    	interrupt->Halt();
-    } else {
+    }
+    else if ((which == SyscallException) && (type == SC_Exit))
+    {
+        printf("Thread id=%d exit\n",currentThread->get_thread_id());
+        DEBUG('a',"syscall Exit\n");
+        #ifdef USER_PROGRAM
+        machine->freePhyPage();
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg)+4);//it seems not need
+        currentThread->Finish();//multi threads
+        #endif
+    }
+    else if(which == SyscallException)
+    {
+        printf("SyscallException type = %d is unhandled\n",type);
+    }
+    else if(which == PageFaultException) 
+    {
+        int BadVAddr = machine->ReadRegister(BadVAddrReg); // perhaps it should be unsighed_int
+        unsigned int vpn = (unsigned int)((unsigned int)BadVAddr / PageSize) ;
+            
+        if (machine->tlb != NULL)//acctually a tlb fault
+        { 
+            DEBUG('a', "Pagefault handler: TLB miss, find a new one\n");
+            TranslationEntry PhysPage = machine->pageTable[vpn];
+            #ifdef FIFO
+            next_tlb = (next_tlb+1)%TLBSize; //FIFO
+            machine->tlb[next_tlb] = PhysPage;
+            //printf("tlb %d\n",next_tlb);
+            #endif 
+            #ifdef LRU
+            next_tlb = LRU_next();
+            machine->tlb[next_tlb] = PhysPage;
+            machine->tlb[next_tlb].last_ticks = stats -> userTicks;
+            #endif
+            return;
+        } 
+        else //not in memoty
+        { 
+            DEBUG('m', "Pagefault handler: Page not in main memory.\n");
+            char *filename = currentThread->space->filename;
+            printf("thread: %d\n",currentThread->get_thread_id());
+            
+            char* switch_file_name = "woshale";
+            OpenFile * switch_file = fileSystem->Open(switch_file_name);
+            ASSERT(switch_file != NULL);            
+            //int vpn = machine->registers[BadVAddrReg]/PageSize;
+            int idx = machine->allocatePhyPage();                        
+            if(idx == -1)//main memory is full
+            {
+                printf("in write back\n");
+                for(int i = 0; i < machine->pageTableSize; ++i)
+                {
+                    //if(machine->pageTable[i].physicalPage == 0)//remove first page which ppn == 0,if(vpn==vpn){...}
+                    if(i == vpn)    //mainMemory[ppn] = file[vpn]
+                    {
+                        TranslationEntry *entry = &(machine->pageTable[i]);
+                        idx = entry->physicalPage;//phy page = 0 of course
+                        if(entry->dirty)
+                        {
+                            printf("pagedault:write back from ppn:%d to vpn:%d\n",idx,vpn);
+                            switch_file->WriteAt(&(machine->mainMemory[idx*PageSize]),
+                                                    PageSize, entry->virtualPage*PageSize);//remove vpn==vpn
+                            entry->valid = FALSE;
+                        }
+                        break;
+                    }
+                }
+            }
+            printf("pagefault:virtualaddr=%d load vpn=%d to ppn:%d\n",machine->registers[BadVAddrReg],vpn,idx);
+            switch_file->ReadAt(&(machine->mainMemory[idx*PageSize]), PageSize, vpn*PageSize);
+            #ifndef INVERSE_TABLE
+            machine->pageTable[vpn].virtualPage = vpn;
+            machine->pageTable[vpn].physicalPage = idx;
+            machine->pageTable[vpn].valid = TRUE;
+            machine->pageTable[vpn].dirty = FALSE;
+            machine->pageTable[vpn].use = FALSE;
+            machine->pageTable[vpn].readOnly = FALSE;
+            #else 
+            machine->pageTable[idx].virtualPage = vpn;
+            machine->pageTable[idx].physicalPage = idx;
+            machine->pageTable[idx].valid = TRUE;
+            machine->pageTable[idx].dirty = FALSE;
+            machine->pageTable[idx].use = FALSE;
+            machine->pageTable[idx].readOnly = FALSE;
+            machine->pageTable[idx].tid = currentThread->get_thread_id();
+            #endif
+            delete switch_file;
+        }
+        
+        return;
+    }
+    else {
 	printf("Unexpected user mode exception %d %d\n", which, type);
 	ASSERT(FALSE);
     }

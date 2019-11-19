@@ -30,7 +30,9 @@ StartProcess(char *filename)
 	printf("Unable to open file %s\n", filename);
 	return;
     }
-    space = new AddrSpace(executable);    
+    space = new AddrSpace(executable); 
+    //modify lab4 exe6
+    space->filename = filename;   
     currentThread->space = space;
 
     delete executable;			// close file
@@ -42,6 +44,46 @@ StartProcess(char *filename)
     ASSERT(FALSE);			// machine->Run never returns;
 					// the address space exits
 					// by doing the syscall "exit"
+}
+void innerFork(int i)
+{
+    printf("in thread: name = %s\n",currentThread->getName());
+    machine->Run();
+    ASSERT(FALSE);
+}
+void
+StartTwoProcess(char *filename)
+{
+    OpenFile *executable1 = fileSystem->Open(filename);
+    OpenFile *executable2 = fileSystem->Open(filename);
+    AddrSpace *space1;
+    AddrSpace *space2;
+    
+    if (executable1 == NULL) {
+	printf("Unable to open file %s\n", filename);
+	return;
+    }
+    printf("load addr t1\n");
+    space1 = new AddrSpace(executable1);
+    printf("load addr t2\n");   
+    space2 = new AddrSpace(executable2); 
+    
+    Thread* t1 = new Thread("SubThread1",0,8);
+    t1->space = space1;
+    delete executable1;			// close file
+    space1->InitRegisters();		// set the initial register values
+    space1->RestoreState();		// load page table register
+    space1->filename = filename;
+    
+    Thread* t2 = new Thread("SubThread2",0,8);
+    t2->space=space2;
+    delete executable2;			// close file
+    space2->InitRegisters();		// set the initial register values
+    space2->RestoreState();		// load page table register
+    space2->filename = filename;
+    
+    t1->Fork(innerFork,(void*)0);
+    t2->Fork(innerFork,(void*)0);
 }
 
 // Data structures needed for the console test.  Threads making

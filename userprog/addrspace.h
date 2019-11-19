@@ -30,12 +30,17 @@ class AddrSpace {
 
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch 
-
+    char *filename;//modify lab4 exe6
+    //NoffHeader noffh;
   private:
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
+    //modify lab4 LRU
+    #ifdef LRU
+    int last_tick;
+    #endif
 };
 
 #endif // ADDRSPACE_H
