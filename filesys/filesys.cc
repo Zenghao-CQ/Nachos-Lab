@@ -107,6 +107,9 @@ FileSystem::FileSystem(bool format)
         DEBUG('f', "Writing headers back to disk.\n");
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
+    //modify lab5 exe2
+    mapHdr->initFileHdr("mapH");
+    dirHdr->initFileHdr("dirH");
 
     // OK to open the bitmap and directory files now
     // The file system operations assume these two files are left open
@@ -201,6 +204,8 @@ FileSystem::Create(char *name, int initialSize)
             	success = FALSE;	// no space on disk for data
 	    else {	
 	    	success = TRUE;
+                //modify lab5
+                hdr->initFileHdr(calType(name));
 		// everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
     	    	directory->WriteBack(directoryFile);

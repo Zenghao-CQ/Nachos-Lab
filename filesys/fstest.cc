@@ -54,7 +54,7 @@ Copy(char *from, char *to)
 	fclose(fp);
 	return;
     }
-    
+    printf("from: %s, to: %s",from,to);
     openFile = fileSystem->Open(to);
     ASSERT(openFile != NULL);
     

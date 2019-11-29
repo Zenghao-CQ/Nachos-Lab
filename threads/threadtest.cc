@@ -15,7 +15,7 @@
 #include "synch.h"
 
 // testnum is set in main.cc
-int testnum = 11;
+int testnum = 100;
 
 //----------------------------------------------------------------------
 // SimpleThread

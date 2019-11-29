@@ -135,6 +135,12 @@ FileHeader::Print()
     printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
     for (i = 0; i < numSectors; i++)
 	printf("%d ", dataSectors[i]);
+    //modify lab5 exe2
+    printf("\ntype:%s",type);
+    printf("\ncreateTime:%s",createTime);
+    printf("\naccessTime:%s",accessTime);
+    printf("\nlast modifyTime:%s",modifyTime);
+
     printf("\nFile contents:\n");
     for (i = k = 0; i < numSectors; i++) {
 	synchDisk->ReadSector(dataSectors[i], data);
@@ -147,4 +153,54 @@ FileHeader::Print()
         printf("\n"); 
     }
     delete [] data;
+}
+
+//modify lab exe2
+
+void
+FileHeader::setCreateTime()
+{
+    time_t time_tmp;
+    time(&time_tmp);
+    struct tm* currentTime = localtime(&time_tmp);
+    char* time = asctime(currentTime);
+    
+}
+void
+FileHeader::setModifyTime()
+{
+    time_t time_tmp;
+    time(&time_tmp);
+    struct tm* currentTime = localtime(&time_tmp);
+    char* time = asctime(currentTime);
+    strcpy(modifyTime,time);
+}
+void
+FileHeader::setAccessTime()
+{
+    time_t time_tmp;
+    time(&time_tmp);
+    struct tm* currentTime = localtime(&time_tmp);
+    char* time = asctime(currentTime);
+    strcpy(accessTime,time);
+}
+void
+FileHeader::initFileHdr(char *in)
+{
+    setType(in);
+    time_t time_tmp;
+    time(&time_tmp);
+    struct tm* currentTime = localtime(&time_tmp);
+    char* time = asctime(currentTime);
+    strcpy(createTime,time);
+    strcpy(modifyTime,time);
+    strcpy(accessTime,time);
+}
+char * calType(char * filename)
+{
+  char* pos = strrchr(filename,'.');
+  if(!pos) 
+    return "None";
+  else 
+    return ++pos;
 }

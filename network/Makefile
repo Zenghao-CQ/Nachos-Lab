@@ -461,8 +461,9 @@ directory.o: ../filesys/directory.cc /usr/include/stdc-predef.h \
  ../threads/stdarg.h /usr/include/bits/stdio_lim.h \
  /usr/include/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../filesys/filehdr.h ../machine/disk.h \
- ../userprog/bitmap.h ../filesys/openfile.h ../filesys/directory.h \
- ../filesys/openfile.h
+ ../userprog/bitmap.h ../filesys/openfile.h /usr/include/time.h \
+ /usr/include/bits/time.h /usr/include/bits/timex.h \
+ ../filesys/directory.h ../filesys/openfile.h
 filehdr.o: ../filesys/filehdr.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/copyright.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -482,7 +483,8 @@ filehdr.o: ../filesys/filehdr.cc /usr/include/stdc-predef.h \
  ../filesys/synchdisk.h ../machine/disk.h ../threads/synch.h \
  ../network/post.h ../machine/network.h ../threads/synchlist.h \
  ../threads/synch.h ../filesys/filehdr.h ../userprog/bitmap.h \
- ../filesys/openfile.h
+ ../filesys/openfile.h /usr/include/time.h /usr/include/bits/time.h \
+ /usr/include/bits/timex.h
 filesys.o: ../filesys/filesys.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/disk.h ../threads/utility.h \
  ../threads/copyright.h ../threads/bool.h ../machine/sysdep.h \
@@ -496,6 +498,7 @@ filesys.o: ../filesys/filesys.cc /usr/include/stdc-predef.h \
  /usr/include/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../filesys/directory.h ../filesys/openfile.h ../filesys/filehdr.h \
+ /usr/include/time.h /usr/include/bits/time.h /usr/include/bits/timex.h \
  ../filesys/filesys.h
 fstest.o: ../filesys/fstest.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
@@ -529,6 +532,7 @@ openfile.o: ../filesys/openfile.cc /usr/include/stdc-predef.h \
  ../threads/stdarg.h /usr/include/bits/stdio_lim.h \
  /usr/include/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../userprog/bitmap.h ../filesys/openfile.h \
+ /usr/include/time.h /usr/include/bits/time.h /usr/include/bits/timex.h \
  ../filesys/openfile.h ../threads/system.h ../threads/utility.h \
  ../threads/thread.h ../machine/machine.h ../machine/translate.h \
  ../machine/disk.h ../userprog/addrspace.h ../filesys/filesys.h \
