@@ -101,6 +101,10 @@ ExceptionHandler(ExceptionType which)
         printf("Thread id=%d exit\n",currentThread->get_thread_id());
         DEBUG('a',"syscall Exit\n");
         #ifdef USER_PROGRAM
+        #ifdef USE_TLB
+		printf("##TLB hit count:%d\n",hitcnt);
+		#endif
+            
         machine->freePhyPage();
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
@@ -130,6 +134,9 @@ ExceptionHandler(ExceptionType which)
             next_tlb = LRU_next();
             machine->tlb[next_tlb] = PhysPage;
             machine->tlb[next_tlb].last_ticks = stats -> userTicks;
+            #endif
+            #ifdef USE_TLB
+            hitcnt++;
             #endif
             return;
         } 

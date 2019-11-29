@@ -256,6 +256,7 @@ int Machine::allocatePhyPage()
 #endif //INVERSE_TABLE
     DEBUG('m', "Allocate page => pagetable full\n");
     printf("Allocate page falut=> pagetable full\n");
+    return -1;
 }
 void Machine::freePhyPage()
 {

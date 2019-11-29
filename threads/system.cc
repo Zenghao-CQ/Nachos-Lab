@@ -33,6 +33,9 @@ SynchDisk   *synchDisk;
 
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
 Machine *machine;	// user program memory and registers
+#ifdef USE_TLB
+int hitcnt = 0;
+#endif
 #endif
 
 #ifdef NETWORK

@@ -116,8 +116,8 @@ main(int argc, char **argv)
         if (!strcmp(*argv, "-x")) {        	// run a user program
 	    ASSERT(argc > 1);
             //StartTwoProcess(*(argv + 1));
-			StartTwoProcess(*(argv + 1));
-            argCount = 2;
+			StartProcess(*(argv + 1));
+			argCount = 2;
         } else if (!strcmp(*argv, "-c")) {      // test the console
 	    if (argc == 1)
 	        ConsoleTest(NULL, NULL);
