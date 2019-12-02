@@ -32,8 +32,11 @@ OpenFile::OpenFile(int sector)
     hdr = new FileHeader;
     hdr->FetchFrom(sector);
     //lab5 exe2
+#ifdef EXTEND
     hdr->setHdrPos(sector);
-
+#endif // EXTEND
+    if(sector!=0 &&sector!=1)
+        hdr->Print();
     seekPosition = 0;
 }
 
@@ -146,8 +149,10 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
     bcopy(&buf[position - (firstSector * SectorSize)], into, numBytes);
     delete [] buf;
     //modify lab5 exe2
+#ifdef EXTEND
     hdr->setAccessTime();
     hdr->WriteBack(hdr->getHdrPos());
+#endif//EXTEND
     return numBytes;
 }
 
@@ -191,10 +196,11 @@ OpenFile::WriteAt(char *from, int numBytes, int position)
 					&buf[(i - firstSector) * SectorSize]);
     delete [] buf;
     //modify lab5 exe2
+#ifdef EXTEND
     hdr->setAccessTime();
     hdr->setModifyTime();
     hdr->WriteBack(hdr->getHdrPos());
-    
+#endif //EXTEND  
     return numBytes;
 }
 

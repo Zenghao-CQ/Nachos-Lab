@@ -37,7 +37,7 @@
 //	"freeMap" is the bit map of free disk sectors
 //	"fileSize" is the bit map of free disk sectors
 //----------------------------------------------------------------------
-
+//#ifndef INDIRERCT
 bool
 FileHeader::Allocate(BitMap *freeMap, int fileSize)
 { 
@@ -50,7 +50,10 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 	dataSectors[i] = freeMap->Find();
     return TRUE;
 }
+//else
 
+
+//#endif //INDIRERCT
 //----------------------------------------------------------------------
 // FileHeader::Deallocate
 // 	De-allocate all the space allocated for data blocks for this file.
@@ -136,11 +139,12 @@ FileHeader::Print()
     for (i = 0; i < numSectors; i++)
 	printf("%d ", dataSectors[i]);
     //modify lab5 exe2
+#ifdef EXTEND
     printf("\ntype:%s",type);
     printf("\ncreateTime:%s",createTime);
     printf("\naccessTime:%s",accessTime);
     printf("\nlast modifyTime:%s",modifyTime);
-
+#endif
     printf("\nFile contents:\n");
     for (i = k = 0; i < numSectors; i++) {
 	synchDisk->ReadSector(dataSectors[i], data);
@@ -156,7 +160,7 @@ FileHeader::Print()
 }
 
 //modify lab exe2
-
+#ifdef EXTEND
 void
 FileHeader::setCreateTime()
 {
@@ -204,3 +208,4 @@ char * calType(char * filename)
   else 
     return ++pos;
 }
+#endif //EXTEND

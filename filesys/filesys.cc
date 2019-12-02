@@ -108,8 +108,10 @@ FileSystem::FileSystem(bool format)
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
     //modify lab5 exe2
+#ifdef EXTEND
     mapHdr->initFileHdr("mapH");
     dirHdr->initFileHdr("dirH");
+#endif //EXTEND
 
     // OK to open the bitmap and directory files now
     // The file system operations assume these two files are left open
@@ -205,7 +207,9 @@ FileSystem::Create(char *name, int initialSize)
 	    else {	
 	    	success = TRUE;
                 //modify lab5
+#ifdef EXTEND
                 hdr->initFileHdr(calType(name));
+#endif //EXTEND
 		// everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
     	    	directory->WriteBack(directoryFile);

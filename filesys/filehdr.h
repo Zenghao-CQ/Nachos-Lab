@@ -19,10 +19,15 @@
 #include "time.h"
 
 //Modify for lab5 exe2 exetend filehdr info
+#ifdef EXTEND
+
 #define TimeInfoSize 26 //25+'/0'
 #define TypeInfoSize 5 //4+'/0'
-
 #define NumDirect 	((SectorSize - 2 * sizeof(int) - (3 * TimeInfoSize + TypeInfoSize ) * sizeof(char)) / sizeof(int))
+
+#else
+#define NumDirect 	((SectorSize - 2 * sizeof(int)) / sizeof(int))
+#endif //EXTEND
 #define MaxFileSize 	(NumDirect * SectorSize)
 
 // The following class defines the Nachos "file header" (in UNIX terms,  
@@ -61,6 +66,7 @@ class FileHeader {
 
     void Print();			// Print the contents of the file.
     //modify lab5 exe2 modify extend info
+#ifdef EXTEND
     void setType(char* in){strcpy(type,in);}
     void setCreateTime();
     void setAccessTime();
@@ -68,20 +74,23 @@ class FileHeader {
     void initFileHdr(char* in);
     void setHdrPos(int pos){hdrPos = pos;}
     int getHdrPos(){return hdrPos;}
-
+#endif
   private:
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
     int dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
     //modify lab5 exe2
+#ifdef EXTEND
     char type[TypeInfoSize];
     char createTime[TimeInfoSize];
     char modifyTime[TimeInfoSize];
     char accessTime[TimeInfoSize];
     int hdrPos;
+#endif
 };
 //modify lab5
+#ifdef EXTEND
 char * calType(char * filename);
-
+#endif //EXTEND
 #endif // FILEHDR_H
