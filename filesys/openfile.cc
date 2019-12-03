@@ -163,15 +163,18 @@ OpenFile::WriteAt(char *from, int numBytes, int position)
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
-    printf("\ntry to write %s,%d,%d\n\n",from,numBytes,position);
+    //printf("\ntry to write %s,%d,%d\n\n",from,numBytes,position);
+#ifndef EXE_LEN
     if ((numBytes <= 0) || (position >= fileLength))
 	return 0;				// check request
+#endif //EXE_LEN
+    //printf("\nany thing wromg\n\n");
     if ((position + numBytes) > fileLength)
 #ifndef EXE_LEN
 	numBytes = fileLength - position;
 #else
     {
-        printf("\n######its full now\n");
+        printf("######its full now\n");
         OpenFile *freeMapFile = new OpenFile(0);
         BitMap *freeMap = new BitMap(NumSectors);
         freeMap->FetchFrom(freeMapFile);
