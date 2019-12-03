@@ -216,6 +216,10 @@ FileSystem::Create(char *name, int initialSize)
     	    	directory->WriteBack(directoryFile);
     	    	freeMap->WriteBack(freeMapFile);
 	    }
+        // printf("---------------\n");
+        // printf("sector:%d\n",sector);
+        // hdr->Print();
+        // printf("---------------\n");
             delete hdr;
 	}
         delete freeMap;
@@ -238,6 +242,7 @@ FileSystem::Create(char *name, int initialSize)
 
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
+    printf("fuck!");
     int dirSecotr = directory->FetchDir(name);
     printf("#####the dir sector is %d\n",dirSecotr);
     OpenFile* dirFile = new OpenFile(dirSecotr);
@@ -338,6 +343,7 @@ FileSystem::Open(char *name)
     sector = directory->Find(fileName); 
 #else
     sector = directory->Find(name); 
+    //printf("\n fitch %s,%d\n\n",name,sector);
 #endif //MULT_DIR
     if (sector >= 0) 		
 	openFile = new OpenFile(sector);	// name was found in directory 

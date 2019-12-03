@@ -34,7 +34,7 @@
 
 #ifndef FS_H
 #define FS_H
-//#define MULT_DIR//*************************************
+//#define EXTEND//*************************************
 #include "copyright.h"
 #include "openfile.h"
 

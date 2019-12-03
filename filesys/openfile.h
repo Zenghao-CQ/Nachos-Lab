@@ -19,7 +19,7 @@
 
 #ifndef OPENFILE_H
 #define OPENFILE_H
-
+//#define EXTEND//!!!!!!!!!!!!!!!!!!!!!!!
 #include "copyright.h"
 #include "utility.h"
 

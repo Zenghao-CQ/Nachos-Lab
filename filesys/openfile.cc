@@ -35,7 +35,7 @@ OpenFile::OpenFile(int sector)
 #ifdef EXTEND
     hdr->setHdrPos(sector);
 #endif // EXTEND
-    // if(sector!=0) &&sector!=1)
+    // if(sector!=0)// && (sector!=1)
     //     hdr->Print();
     seekPosition = 0;
 }
@@ -163,11 +163,25 @@ OpenFile::WriteAt(char *from, int numBytes, int position)
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
-
+    printf("\ntry to write %s,%d,%d\n\n",from,numBytes,position);
     if ((numBytes <= 0) || (position >= fileLength))
 	return 0;				// check request
     if ((position + numBytes) > fileLength)
+#ifndef EXE_LEN
 	numBytes = fileLength - position;
+#else
+    {
+        printf("\n######its full now\n");
+        OpenFile *freeMapFile = new OpenFile(0);
+        BitMap *freeMap = new BitMap(NumSectors);
+        freeMap->FetchFrom(freeMapFile);
+        hdr->expandFileSize(freeMap,position + numBytes - fileLength);
+        hdr->WriteBack(hdr->getHdrPos());
+        freeMap->WriteBack(freeMapFile);
+        delete freeMapFile;
+        fileLength = hdr->FileLength();
+    }
+#endif //EXE_LEN
     DEBUG('f', "Writing %d bytes at %d, from file of length %d.\n", 	
 			numBytes, position, fileLength);
 

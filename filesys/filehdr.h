@@ -75,6 +75,9 @@ class FileHeader {
     void setHdrPos(int pos){hdrPos = pos;}
     int getHdrPos(){return hdrPos;}
 #endif
+#ifdef EXE_LEN
+    bool expandFileSize(BitMap* freeMap,int addBytes);
+#endif
   private:
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
