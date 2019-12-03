@@ -35,8 +35,8 @@ OpenFile::OpenFile(int sector)
 #ifdef EXTEND
     hdr->setHdrPos(sector);
 #endif // EXTEND
-    if(sector!=0 &&sector!=1)
-        hdr->Print();
+    // if(sector!=0) &&sector!=1)
+    //     hdr->Print();
     seekPosition = 0;
 }
 
@@ -48,7 +48,7 @@ OpenFile::OpenFile(int sector)
 OpenFile::~OpenFile()
 {
     //modify lab5 exe2
-    //hdr->WriteBack(hdr->getHdrPos());
+    //hdr->WriteBack(hdr->getHdrPos());??
     delete hdr;
 }
 

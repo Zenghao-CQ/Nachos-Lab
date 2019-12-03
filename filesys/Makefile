@@ -8,7 +8,7 @@
 # All rights reserved.  See copyright.h for copyright notice and limitation 
 # of liability and disclaimer of warranty provisions.
 
-DEFINES =-DTHREADS -DUSER_PROGRAM -DVM -DFILESYS_NEEDED -DFILESYS -DINDIRERCT #-DEXTEND
+DEFINES =-DTHREADS -DUSER_PROGRAM -DVM -DFILESYS_NEEDED -DFILESYS -DMULT_DIR#-DINDIRERCT -DEXTEND
 INCPATH = -I../filesys -I../bin -I../vm -I../userprog -I../threads -I../machine
 HFILES = $(THREAD_H) $(USERPROG_H) $(VM_H) $(FILESYS_H)
 CFILES = $(THREAD_C) $(USERPROG_C) $(VM_C) $(FILESYS_C)
@@ -496,7 +496,8 @@ fstest.o: ../filesys/fstest.cc /usr/include/stdc-predef.h \
  ../userprog/addrspace.h ../filesys/filesys.h ../threads/scheduler.h \
  ../threads/list.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../filesys/synchdisk.h \
- ../machine/disk.h ../threads/synch.h ../threads/thread.h
+ ../machine/disk.h ../threads/synch.h ../threads/thread.h \
+ ../filesys/directory.h
 openfile.o: ../filesys/openfile.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../filesys/filehdr.h ../machine/disk.h \
  ../threads/utility.h ../threads/copyright.h ../threads/bool.h \

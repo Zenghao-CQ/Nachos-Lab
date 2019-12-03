@@ -176,6 +176,7 @@ FileSystem::FileSystem(bool format)
 //	"initialSize" -- size of file to be created
 //----------------------------------------------------------------------
 
+#ifndef MULT_DIR
 bool
 FileSystem::Create(char *name, int initialSize)
 {
@@ -222,6 +223,85 @@ FileSystem::Create(char *name, int initialSize)
     delete directory;
     return success;
 }
+#else
+bool
+FileSystem::Create(char *name, int initialSize)
+{
+    printf("###in create %s , %d\n",name,initialSize);
+    Directory *directory;
+    BitMap *freeMap;
+    FileHeader *hdr;
+    int sector;
+    bool success;
+
+    DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
+
+    directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+    int dirSecotr = directory->FetchDir(name);
+    printf("#####the dir sector is %d\n",dirSecotr);
+    OpenFile* dirFile = new OpenFile(dirSecotr);
+    directory->FetchFrom(dirFile);
+    
+    char fileName[FileNameMaxLen + 1];
+    char* pos = strrchr(name,'/');//get file name
+    if(pos == NULL)
+        pos = name;
+    else
+        pos++;
+    strcpy(fileName,pos);
+    if(directory->Find(fileName) != -1)
+        return FALSE;
+    freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+    sector = freeMap->Find();	// find a sector to hold the file header
+    if (sector == -1) 		
+        success = FALSE;
+    //create part
+    if(initialSize == -1)
+    {
+        if(!directory->Add(name,sector,TRUE))
+            return FALSE;
+        hdr = new FileHeader;
+        if(!hdr->Allocate(freeMap,DirectoryFileSize))
+            return FALSE;
+        success = TRUE;
+#ifdef EXTEND
+        hdr->initFileHdr(calType(name));
+#endif //EXTEND
+		// everthing worked, flush all changes back to disk
+    	hdr->WriteBack(sector); 	
+        Directory *dir = new Directory(NumDirEntries);
+        OpenFile * dir_file = new OpenFile(sector);
+        dir->WriteBack(dir_file);
+    	directory->WriteBack(dirFile);
+    	freeMap->WriteBack(freeMapFile);
+        delete hdr;
+        delete freeMap;
+        delete directory;
+    }
+    else
+    {
+        if (!directory->Add(name, sector))
+            return FALSE;	
+	    hdr = new FileHeader;
+	    if (!hdr->Allocate(freeMap, initialSize))
+            return FALSE;	
+	    success = TRUE;
+#ifdef EXTEND
+        hdr->initFileHdr(calType(name));
+#endif //EXTEND
+		hdr->WriteBack(sector);	
+    	directory->WriteBack(dirFile);
+    	freeMap->WriteBack(freeMapFile);
+        delete hdr;
+        delete freeMap;
+        delete directory;   
+    }
+    return success;
+}
+#endif //MULT_DIR
+
 
 //----------------------------------------------------------------------
 // FileSystem::Open
@@ -242,7 +322,23 @@ FileSystem::Open(char *name)
 
     DEBUG('f', "Opening file %s\n", name);
     directory->FetchFrom(directoryFile);
+#ifdef MULT_DIR
+    sector = directory->FetchDir(name);
+    directory = new Directory(NumDirEntries);
+    if(sector >= 0)
+        openFile = new OpenFile(sector);
+    directory->FetchFrom(openFile);
+    char fileName[FileNameMaxLen + 1];
+    char* pos = strrchr(name,'/');//get file name
+    if(pos == NULL)
+        pos = name;
+    else
+        pos++;
+    strcpy(fileName,pos);
+    sector = directory->Find(fileName); 
+#else
     sector = directory->Find(name); 
+#endif //MULT_DIR
     if (sector >= 0) 		
 	openFile = new OpenFile(sector);	// name was found in directory 
     delete directory;

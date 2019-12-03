@@ -8,9 +8,10 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-// #define USER_PROGRAM
+// #define INDIRERCT
+// #define FILESYS
 // #define FILESYS_NEEDED
-// #define USE_TLB
+// #define MULT_DIR
 // #define LRU
 // #define INVERSE_TABLE
 // #define LAZY_LOADING

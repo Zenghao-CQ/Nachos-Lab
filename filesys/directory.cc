@@ -125,15 +125,15 @@ Directory::Find(char *name)
 //	"name" -- the name of the file being added
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
-
+#ifndef MULT_DIR
 bool
 Directory::Add(char *name, int newSector)
 { 
     if (FindIndex(name) != -1)
 	return FALSE;
-
     for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
+        if (!table[i].inUse) 
+        {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
@@ -141,7 +141,35 @@ Directory::Add(char *name, int newSector)
 	}
     return FALSE;	// no space.  Fix when we have extensible files.
 }
+#else
+bool
+Directory::Add(char *name, int newSector, bool dir = FALSE)
+{ 
+    char fileName[FileNameMaxLen+1];
+    char* pos = strrchr(name,'/');
+    if(pos == NULL)
+        pos = name;
+    else
+        pos++;
+    strcpy(fileName,pos);
+    printf("try to add:%s\n",fileName);
+    if(FindIndex(fileName) != -1)
+        return FALSE;
+    for (int i = 0; i < tableSize; ++i)
+        if (!table[i].inUse) 
+        {
+            table[i].inUse = TRUE;
+            strncpy(table[i].path, name, MaxPathLen);
+            strncpy(table[i].name, fileName, FileNameMaxLen); 
+            table[i].sector = newSector;
+            table[i].isDir = dir;
 
+            return TRUE;
+        }
+    return FALSE;	// no space.  Fix when we have extensible files.
+}
+
+#endif //MULT_DTR
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -184,14 +212,53 @@ void
 Directory::Print()
 { 
     FileHeader *hdr = new FileHeader;
-
     printf("Directory contents:\n");
     for (int i = 0; i < tableSize; i++)
 	if (table[i].inUse) {
 	    printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
 	    hdr->FetchFrom(table[i].sector);
 	    hdr->Print();
+#ifdef MULT_DIR
+        if(table[i].isDir)
+        {
+            OpenFile* DirFile = new OpenFile(table[i].sector);
+            Directory* Dir = new Directory(NumDirEntries);
+            Dir->FetchFrom(DirFile);
+            printf("-----------\n");
+            Dir->Print();
+            printf("-----------\n");
+        }
+#endif
 	}
     printf("\n");
     delete hdr;
 }
+
+#ifdef MULT_DIR
+int 
+Directory::FetchDir(char* filepath)
+{
+    OpenFile* rootDirFile = new OpenFile(DirectorySector);
+    Directory* rootDir = new Directory(NumDirEntries);
+    rootDir->FetchFrom(rootDirFile);
+    int i = 0;
+    int sector = 1;
+    int pos = 0;//start with '/' as root
+    char dirname[MaxPathLen];
+    while(pos<strlen(filepath))
+    {
+        dirname[i++] = filepath[pos++];
+        if(filepath[pos] == '/')
+        {
+            dirname[i]='\0';
+            sector = rootDir->Find(dirname);
+            rootDirFile = new OpenFile(sector);
+            rootDir = new Directory(NumDirEntries);
+            rootDir->FetchFrom(rootDirFile);
+            pos++;
+            i = 0;
+        }
+    }
+    return sector;
+}
+#endif //MULT_DIR

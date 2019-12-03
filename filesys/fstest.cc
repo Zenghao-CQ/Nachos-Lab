@@ -20,6 +20,7 @@
 #include "thread.h"
 #include "disk.h"
 #include "stats.h"
+#include "directory.h"
 
 #define TransferSize 	10 	// make it small, just to be difficult
 
@@ -183,3 +184,13 @@ PerformanceTest()
     stats->Print();
 }
 
+#ifdef MULT_DIR
+void
+tree()
+{
+    OpenFile* rootDirFile = new OpenFile(DirectorySector);
+    Directory* rootDir = new Directory(NumDirEntries);
+    rootDir->FetchFrom(rootDirFile);
+    rootDir->Print();
+}
+#endif //MULT_DIR

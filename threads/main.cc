@@ -151,6 +151,14 @@ main(int argc, char **argv)
 	} else if (!strcmp(*argv, "-t")) {	// performance test
             PerformanceTest();
 	}
+#ifdef MULT_DIR
+	else if (!strcmp(*argv, "-mkdir")) {	// performance test
+            ASSERT(argc > 1);
+			fileSystem->Create(*(argv + 1),-1);
+	    	argCount = 2;
+	}
+#endif //MULT_DIR
+
 #endif // FILESYS
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {

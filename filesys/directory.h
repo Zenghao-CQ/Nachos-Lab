@@ -17,10 +17,13 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
+//#define MULT_DIR//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!delete it
+
 #include "openfile.h"
 
 #define FileNameMaxLen 		9	// for simplicity, we assume 
 					// file names are <= 9 characters long
+#define MaxPathLen 20
 
 // The following class defines a "directory entry", representing a file
 // in the directory.  Each entry gives the name of the file, and where
@@ -36,6 +39,10 @@ class DirectoryEntry {
 					//   FileHeader for this file 
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
+#ifdef MULT_DIR
+    bool isDir;
+    char path[MaxPathLen];
+#endif //MULT_DIR
 };
 
 // The following class defines a UNIX-like "directory".  Each entry in
@@ -60,9 +67,12 @@ class Directory {
 
     int Find(char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
-
+#ifndef MULT_DIR
     bool Add(char *name, int newSector);  // Add a file name into the directory
-
+#else
+    bool Add(char *name, int newSector, bool dir = FALSE);  // Add a file name into the directory
+#endif //MULT_DIR
+//for file "a.txt"; for dir "/a/b.txt"
     bool Remove(char *name);		// Remove a file from the directory
 
     void List();			// Print the names of all the files
@@ -70,7 +80,11 @@ class Directory {
     void Print();			// Verbose print of the contents
 					//  of the directory -- all the file
 					//  names and their contents.
-
+#ifdef MULT_DIR
+#define DirectorySector 1
+#define NumDirEntries 10
+    int FetchDir(char* path);//find file
+#endif //MULT_DIR
   private:
     int tableSize;			// Number of directory entries
     DirectoryEntry *table;		// Table of pairs: 
