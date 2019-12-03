@@ -63,7 +63,7 @@ extern int testnum;
 // External functions used by this file
 
 extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
-extern void Print(char *file), PerformanceTest(void),FileWrite(),protectTest();
+extern void Print(char *file), PerformanceTest(void),FileWrite(),protectTest(),testpip();
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void StartTwoProcess(char *file);
@@ -168,6 +168,11 @@ main(int argc, char **argv)
 	    	argCount = 2;
 	}
 #endif //MULT_DIR
+#ifdef USE_PIP
+	else if (!strcmp(*argv, "-pip")) {	// performance test
+            testpip();
+	}
+#endif//
 
 #endif // FILESYS
 #ifdef NETWORK

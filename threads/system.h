@@ -10,7 +10,7 @@
 
 // #define INDIRERCT
 //#define FILESYS
-// #define FILESYS_NEEDED
+//#define FILESYS_NEEDED
 // #define MULT_DIR
 // #define LRU
 // #define INVERSE_TABLE

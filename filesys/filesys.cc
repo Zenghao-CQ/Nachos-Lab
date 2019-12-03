@@ -56,6 +56,9 @@
 // sectors, so that they can be located on boot-up.
 #define FreeMapSector 		0
 #define DirectorySector 	1
+#ifdef USE_PIP
+#define PipSector           2
+#endif
 
 // Initial file sizes for the bitmap and directory; until the file system
 // supports extensible files, the directory size sets the maximum number 
@@ -63,7 +66,9 @@
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
 #define NumDirEntries 		10
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
-
+#ifdef USE_PIP
+#define PipFileSize         SectorSize
+#endif
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
 // 	Initialize the file system.  If format = TRUE, the disk has
@@ -119,7 +124,12 @@ FileSystem::FileSystem(bool format)
 
         freeMapFile = new OpenFile(FreeMapSector);
         directoryFile = new OpenFile(DirectorySector);
-     
+#ifdef USE_PIP
+        FileHeader* pipHdr = new FileHeader;
+        freeMap->Mark(PipSector);
+        ASSERT(pipHdr->Allocate(freeMap,PipFileSize));
+        pipHdr->WriteBack(PipSector);
+#endif
     // Once we have the files "open", we can write the initial version
     // of each file back to disk.  The directory at this point is completely
     // empty; but the bitmap has been changed to reflect the fact that
@@ -456,3 +466,36 @@ FileSystem::Print()
     delete freeMap;
     delete directory;
 } 
+
+#ifdef USE_PIP
+int
+FileSystem::readFromPip(char *into)
+{
+    FileHeader* piphdr = new FileHeader;
+    piphdr->FetchFrom(PipSector);
+    int numBytes = piphdr->numBytes;
+    piphdr->WriteBack(PipSector);
+    printf("read %d bytes from pipe ",numBytes);
+    pipFile = new OpenFile(PipSector);
+    pipFile->Read(into,numBytes);
+    printf("success\n");
+    delete piphdr;
+    delete pipFile;
+    return numBytes;
+}
+void
+FileSystem::writeIntoPip(char *into,int numBytes)
+{
+    pipFile = new OpenFile(PipSector);
+    printf("write %d bytes into pipe ",numBytes);
+    pipFile->Write(into,numBytes);
+    printf("success\n");
+
+    FileHeader* piphdr = new FileHeader;
+    piphdr->FetchFrom(PipSector);
+    piphdr->numBytes = numBytes;
+    piphdr->WriteBack(PipSector);
+    delete piphdr;
+    delete pipFile;
+}
+#endif

@@ -34,7 +34,7 @@
 
 #ifndef FS_H
 #define FS_H
-//#define EXTEND//*************************************
+//#define USE_PIP//*************************************
 #include "copyright.h"
 #include "openfile.h"
 
@@ -84,12 +84,19 @@ class FileSystem {
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
-
+#ifdef USE_PIP
+	int readFromPip(char *into);
+	void writeIntoPip(char *into, int numBytes);
+#endif //USE_PIP
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,
 					// represented as a file
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
+#ifdef USE_PIP
+	OpenFile* pipFile;
+	int pipContLen;
+#endif //USE_PIP
 };
 
 #endif // FILESYS

@@ -78,8 +78,13 @@ class FileHeader {
 #ifdef EXE_LEN
     bool expandFileSize(BitMap* freeMap,int addBytes);
 #endif
-  private:
+#ifdef USE_PIP
     int numBytes;			// Number of bytes in the file
+#endif
+  private:
+#ifndef USE_PIP
+    int numBytes;			// Number of bytes in the file
+#endif
     int numSectors;			// Number of data sectors in the file
     int dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file

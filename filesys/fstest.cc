@@ -210,3 +210,28 @@ protectTest()
     FileWrite();
 }
 #endif
+#ifdef USE_PIP
+const int buffSize = 27;
+void fwrite(int t)
+{
+    char buffer[buffSize];
+    strncpy(buffer,"abcdefghijklmnopqrstuvwxyz",buffSize);
+    printf("write int0 pipe\n");
+    fileSystem->writeIntoPip(buffer,buffSize);
+}
+void fread(int t)
+{
+    char buffer[buffSize];
+    printf("read from pipe\n");
+    fileSystem->readFromPip(buffer);
+    printf("%s\n",buffer);
+}
+void testpip()
+{
+    Thread* t1 = new Thread("fwrite");
+    Thread* t2 = new Thread("fwrite");
+    t1->Fork(fwrite,(void*)1);
+    t2->Fork(fread,(void*)1);
+    currentThread->Yield();
+}
+#endif
