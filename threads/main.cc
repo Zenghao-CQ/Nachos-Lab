@@ -63,7 +63,7 @@ extern int testnum;
 // External functions used by this file
 
 extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
-extern void Print(char *file), PerformanceTest(void),FileWrite();
+extern void Print(char *file), PerformanceTest(void),FileWrite(),protectTest();
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void StartTwoProcess(char *file);
@@ -156,7 +156,11 @@ main(int argc, char **argv)
             FileWrite();
 	}
 #endif //EXE_LEN	
-
+#ifdef PROTECT
+	else if (!strcmp(*argv, "-pt")) {	// performance test
+            protectTest();
+	}
+#endif
 #ifdef MULT_DIR
 	else if (!strcmp(*argv, "-mkdir")) {	// performance test
             ASSERT(argc > 1);

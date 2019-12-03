@@ -17,7 +17,7 @@
 #include "disk.h"
 #include "bitmap.h"
 #include "time.h"
-
+//#define EXTEND //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //Modify for lab5 exe2 exetend filehdr info
 #ifdef EXTEND
 

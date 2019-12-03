@@ -380,6 +380,12 @@ FileSystem::Remove(char *name)
        delete directory;
        return FALSE;			 // file not found 
     }
+#ifdef PROTEST
+    if(synchDisk->getRead(sector)!=0){
+       delete directory;
+       return FALSE;			 
+    }
+#endif
     fileHdr = new FileHeader;
     fileHdr->FetchFrom(sector);
 

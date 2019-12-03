@@ -10,7 +10,7 @@
 
 #ifndef SYNCHDISK_H
 #define SYNCHDISK_H
-
+//#define PROTECT//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "disk.h"
 #include "synch.h"
 
@@ -41,8 +41,19 @@ class SynchDisk {
     void RequestDone();			// Called by the disk device interrupt
 					// handler, to signal that the
 					// current disk operation is complete.
-
+#ifdef PROTECT
+    void beginRead(int sector);
+    void endRead(int sector);
+    void beginWrite(int sector);
+    void endWrite(int sector);
+    int getRead(int sector);
+#endif //PROTECT
   private:
+#ifdef PROTECT
+    Semaphore *sema[NumSectors];
+    int readcnt[NumSectors];
+    Lock* readLock;
+#endif //PROTECT
     Disk *disk;		  		// Raw disk device
     Semaphore *semaphore; 		// To synchronize requesting thread 
 					// with the interrupt handler

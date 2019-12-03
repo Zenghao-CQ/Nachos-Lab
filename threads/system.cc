@@ -168,9 +168,10 @@ Initialize(int argc, char **argv)
     if (randomYield)				// start the timer (if needed)
         timer = new Timer(TimerInterruptHandler, 0, randomYield);
     //modify lab2
+//#ifdef TIMESWITCH
     else
         timer = new Timer(TimerInterruptHandler_lab2, 0, FALSE);//no random
-
+//#endif
     threadToBeDestroyed = NULL;
 
     // We didn't explicitly allocate the current thread we are running in.

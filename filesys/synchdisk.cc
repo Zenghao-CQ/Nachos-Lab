@@ -42,6 +42,14 @@ DiskRequestDone (int arg)
 
 SynchDisk::SynchDisk(char* name)
 {
+#ifdef PROTECT
+    for(int i=0;i<NumSectors;++i)
+    {
+        sema[i] = new Semaphore("diskSema",1);
+        readcnt[i] = 0;
+    }
+    readLock = new Lock("diskLock");
+#endif //PROTECT
     semaphore = new Semaphore("synch disk", 0);
     lock = new Lock("synch disk lock");
     disk = new Disk(name, DiskRequestDone, (int) this);
@@ -55,6 +63,13 @@ SynchDisk::SynchDisk(char* name)
 
 SynchDisk::~SynchDisk()
 {
+#ifdef PROTECT
+    for(int i=0;i<NumSectors;++i)
+    {
+        delete sema[i];
+    }
+    delete readLock;
+#endif //PROTECT
     delete disk;
     delete lock;
     delete semaphore;
@@ -107,3 +122,44 @@ SynchDisk::RequestDone()
 { 
     semaphore->V();
 }
+
+#ifdef PROTECT
+void 
+SynchDisk::beginRead(int sector)
+{
+    readLock->Acquire();
+    if(readcnt[sector]==0)
+        sema[sector]->P();
+    ++readcnt[sector];
+    printf("sector %d now readcnt is %d",sector,readcnt[sector]);
+    readLock->Release();
+}
+void 
+SynchDisk::endRead(int sector)
+{
+    readLock->Acquire();
+    --readcnt[sector];
+    if(readcnt[sector]==0)
+        sema[sector]->V();
+    printf("sector %d now readcnt is %d",sector,readcnt[sector]);
+    readLock->Release();
+}
+void 
+SynchDisk::beginWrite(int sector)
+{
+    sema[sector]->P();
+}
+void 
+SynchDisk::endWrite(int sector)
+{
+    sema[sector]->P();
+}
+int 
+SynchDisk::getRead(int sector)
+{   
+    readLock->Acquire();
+    int temp = readcnt[sector];
+    readLock->Release();
+    return temp;
+}
+#endif //PROTECT

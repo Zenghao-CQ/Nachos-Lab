@@ -82,16 +82,28 @@ OpenFile::Seek(int position)
 int
 OpenFile::Read(char *into, int numBytes)
 {
-   int result = ReadAt(into, numBytes, seekPosition);
-   seekPosition += result;
-   return result;
+#ifdef PROTEC
+    synchDisk->beginRead(hdr->getHdrPos());
+#endif
+    int result = ReadAt(into, numBytes, seekPosition);
+    seekPosition += result;
+#ifdef PROTEC
+    synchDisk->endRead(hdr->getHdrPos());
+#endif
+    return result;
 }
 
 int
 OpenFile::Write(char *into, int numBytes)
 {
+#ifdef PROTEC
+    synchDisk->beginWrite(hdr->getHdrPos());
+#endif
    int result = WriteAt(into, numBytes, seekPosition);
    seekPosition += result;
+#ifdef PROTEC
+    synchDisk->endWrite(hdr->getHdrPos());
+#endif
    return result;
 }
 

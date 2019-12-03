@@ -194,3 +194,19 @@ tree()
     rootDir->Print();
 }
 #endif //MULT_DIR
+#ifdef PROTECT
+void forkfoo(int i)
+{
+    FileRead();
+}
+
+void 
+protectTest()
+{
+    Thread * t1 = new Thread("inner1");
+    Thread * t2 = new Thread("inner1");
+    t1->Fork(forkfoo,(void *)1);
+    t2->Fork(forkfoo,(void *)1);
+    FileWrite();
+}
+#endif
