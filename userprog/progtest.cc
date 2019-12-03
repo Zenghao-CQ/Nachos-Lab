@@ -108,7 +108,7 @@ static void WriteDone(int arg) { writeDone->V(); }
 //----------------------------------------------------------------------
 
 void 
-ConsoleTest (char *in, char *out)
+ConsoleTest_old (char *in, char *out)
 {
     char ch;
 
@@ -122,5 +122,23 @@ ConsoleTest (char *in, char *out)
 	console->PutChar(ch);	// echo it!
 	writeDone->P() ;        // wait for write to finish
 	if (ch == 'q') return;  // if q, quit
+    }
+}
+
+static SynchConsole *sy_Console;
+
+void
+ConsoleTest (char *in, char *out)
+{
+    char ch;
+
+    sy_Console = new SynchConsole(in, out);
+
+    while(true) 
+    {
+        ch = sy_Console->GetChar();
+        sy_Console->PutChar(ch); // echo it!
+        if (ch == 'q')
+            return; // if q, quit
     }
 }
