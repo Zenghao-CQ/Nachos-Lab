@@ -87,28 +87,110 @@ void SwapHeader (NoffHeader *noffH)
 	noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
 
+void PCForward()
+{
+    machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+    machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+    machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg)+sizeof(int));//it seems not need        
+}
+
+bool readStr(int addr, char* into)
+{
+    int pos = 0;
+    int data;
+    do 
+    {
+        bool success = machine->ReadMem(addr + pos, 1, &data);
+        if(!success) return FALSE;
+        into[pos++] = (char)data;
+    } while(data != '\0');
+    into[pos] = '\0';
+    return true;
+}
+
 void
 ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
 
-    if ((which == SyscallException) && (type == SC_Halt)) {
-	DEBUG('a', "Shutdown, initiated by user program.\n");
-   	interrupt->Halt();
+    if ((which == SyscallException) && (type == SC_Halt)) 
+    {
+    	DEBUG('a', "Shutdown, initiated by user program.\n");
+   	    interrupt->Halt();
+    }
+    else if((which == SyscallException) && (type == SC_Create))
+    {
+        printf("Syscall Create:");
+        int addr = machine->ReadRegister(4);
+        char filename[10];
+        ASSERT(readStr(addr,filename));
+        ASSERT(fileSystem->Create(filename,30));
+        PCForward();
+        printf(" filename:%s success\n",filename);
+    }
+    else if((which == SyscallException) && (type == SC_Open))
+    {
+        printf("Syscall Open");
+        int addr = machine->ReadRegister(4);
+        char filename[10];
+        ASSERT(readStr(addr,filename));
+        OpenFile* tmp = fileSystem->Open(filename);
+        machine->WriteRegister(2,int(tmp));
+        PCForward();
+        printf(" filename:%s success\n",filename);
+    }
+    else if((which == SyscallException) && (type == SC_Close))
+    {
+        printf("Syscall Close");
+        int fileId = machine->ReadRegister(4);
+        OpenFile* tmp = (OpenFile*)fileId;
+        delete tmp;
+        PCForward();
+        printf(" success\n");
+    }
+    else if((which == SyscallException) && (type == SC_Read))
+    {
+        printf("Syscall Read");
+        int addr = machine->ReadRegister(4);
+        int size = machine->ReadRegister(5);
+        int fileId = machine->ReadRegister(6);
+        OpenFile* fileIn = (OpenFile*) fileId;
+        char buffer[size];
+        int numBytes = fileIn->Read(buffer,size);
+        for(int i = 0; i < numBytes; ++i)
+            machine->WriteMem(addr + i, 1, (int)(buffer[i]));
+        machine->WriteRegister(2,numBytes);
+        PCForward();
+        printf(" success\n");
+    }
+    else if((which == SyscallException) && (type == SC_Write))
+    {
+        printf("Syscall write");
+        int addr = machine->ReadRegister(4);
+        int size = machine->ReadRegister(5);
+        int fileId = machine->ReadRegister(6);
+        OpenFile* FileOut = (OpenFile*) fileId;
+        char *buffer = new char[size];
+        int temp;
+        for(int i = 0; i < size; ++i)
+        {
+            machine->ReadMem(addr + i, 1, &temp);
+            buffer[i] =temp;
+        }
+        FileOut->Write(buffer,size);
+        PCForward();
+        printf(" success\n");
     }
     else if ((which == SyscallException) && (type == SC_Exit))
     {
-        printf("Thread id=%d exit\n",currentThread->get_thread_id());
+        printf("Thread id=%d Syscall exit\n",currentThread->get_thread_id());
         DEBUG('a',"syscall Exit\n");
         #ifdef USER_PROGRAM
         #ifdef USE_TLB
 		printf("##TLB hit count:%d\n",hitcnt);
 		#endif
-            
+        PCForward();
         machine->freePhyPage();
-        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
-        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
-        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg)+4);//it seems not need
         currentThread->Finish();//multi threads
         #endif
     }

@@ -8,13 +8,9 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-// #define INDIRERCT
-//#define FILESYS
-//#define FILESYS_NEEDED
-// #define MULT_DIR
-// #define LRU
-// #define INVERSE_TABLE
-// #define LAZY_LOADING
+// #define USER_PROGRAM
+// #define FILESYS_NEEDED
+// #define FILESYS
 
 #include "copyright.h"
 #include "utility.h"
