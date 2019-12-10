@@ -8,9 +8,9 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-// #define USER_PROGRAM
-// #define FILESYS_NEEDED
-// #define FILESYS
+#define USER_PROGRAM
+#define FILESYS_NEEDED
+#define FILESYS
 
 #include "copyright.h"
 #include "utility.h"

@@ -86,7 +86,6 @@ void SwapHeader (NoffHeader *noffH)
 	noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
 	noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
-
 void PCForward()
 {
     machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
@@ -106,6 +105,25 @@ bool readStr(int addr, char* into)
     } while(data != '\0');
     into[pos] = '\0';
     return true;
+}
+
+void innerExec(int addr)
+{
+    char fileName[10];
+    ASSERT(readStr(addr,fileName));
+    printf("\n SC_EXEC open %s\n",fileName);
+    OpenFile *executable = fileSystem->Open(fileName);
+    if(!executable)
+    {
+        printf("Can not open\n");
+        ASSERT(false);
+    }
+    AddrSpace * space = new AddrSpace(executable);
+    currentThread->space = space;
+    delete executable;
+    space->InitRegisters();
+    space->RestoreState();
+    machine->Run();
 }
 
 void
@@ -181,6 +199,51 @@ ExceptionHandler(ExceptionType which)
         PCForward();
         printf(" success\n");
     }
+
+    //lab6 part2
+    else if((which == SyscallException) && (type == SC_Exec))
+    {
+        printf("Syscall exec ");
+        int addr = machine->ReadRegister(4);
+        Thread *tmp = new Thread("innerExec");
+        tmp->Fork(innerExec,(void*)addr);
+        machine->WriteRegister(2,tmp->get_thread_id());
+        PCForward();
+        printf(" success\n");
+    }
+    // else if((which == SyscallException) && (type == SC_Fork))
+    // {
+    //     printf("Syscall Fork");
+    //     int addrPC = machine->ReadRegister(4);
+    //     OpenFile *filein = fileSystem->Open(currentThread->space->filename);
+    //     AddrSpace *space = new AddrSpace(currentThread->space);
+    //     Thread* tmp = new Thread("innerFork");
+    //     tmp->space = space;
+    //     tmp->CopyReg(currentThread);
+    //     tmp->Fork(inner_Fork,(void*)addrPC);
+    //     PCForward();
+    //     printf(" success\n");
+    // }
+    else if ((which == SyscallException) && (type == SC_Yield))
+    {
+        printf("Syscall Yiled: ");
+        currentThread->Yield();
+        PCForward();
+        printf(" success\n");
+    }
+    else if ((which == SyscallException) && (type == SC_Join))
+    {
+        printf("Syscall Join: ");
+        int tid = machine->ReadRegister(4);
+        while(threads_ids[tid])
+            currentThread->Yield();
+        PCForward();
+        printf(" success\n");
+    }
+
+
+
+
     else if ((which == SyscallException) && (type == SC_Exit))
     {
         printf("Thread id=%d Syscall exit\n",currentThread->get_thread_id());
